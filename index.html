@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Real Launchpad Touch</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#141a3a,#02030a);
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  font-family:system-ui;
+  color:#fff;
+}
+.top{
+  display:flex;
+  gap:10px;
+  margin-bottom:14px;
+}
+input{
+  width:240px;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  background:#0e1328;
+  color:#fff;
+}
+button{
+  padding:10px 14px;
+  border-radius:8px;
+  border:none;
+  background:#1e264d;
+  color:#fff;
+}
+.padbox{
+  display:grid;
+  grid-template-columns:repeat(8,64px);
+  gap:12px;
+  padding:34px;
+  background:linear-gradient(145deg,#0c1230,#05081a);
+  border-radius:30px;
+  box-shadow:
+    inset 0 0 60px rgba(255,255,255,.05),
+    inset 0 -20px 40px rgba(0,0,0,.9),
+    0 50px 120px rgba(0,0,0,1);
+}
+.pad{
+  width:64px;height:64px;
+  border-radius:12px;
+  background:linear-gradient(145deg,#232b55,#0a0f2a);
+  box-shadow:
+    inset 0 3px 6px rgba(255,255,255,.18),
+    inset 0 -8px 14px rgba(0,0,0,.9),
+    0 10px 20px rgba(0,0,0,.9);
+  transition:.05s;
+}
+.pad.on{
+  box-shadow:
+    inset 0 0 16px rgba(255,255,255,.8),
+    0 0 var(--glow) rgba(255,210,0,.9),
+    0 0 calc(var(--glow)*2) rgba(255,180,0,.8);
+  background:radial-gradient(circle at 30% 30%,#fffbd1,#ffcc00);
+}
+.pad.hit{
+  transform:translateY(6px) scale(.94);
+}
+</style>
+</head>
+
+<body>
+
+<div class="top">
+  <input id="songUrl" placeholder="mp3 / wav linki">
+  <button onclick="start()">Başlat</button>
+</div>
+
+<div class="padbox" id="grid"></div>
+
+<script>
+const grid=document.getElementById("grid");
+const pads=[];
+for(let i=0;i<64;i++){
+  const p=document.createElement("div");
+  p.className="pad";
+  p.style.setProperty("--glow","20px");
+  p.addEventListener("pointerdown",()=>hit(p));
+  grid.appendChild(p);
+  pads.push(p);
+}
+
+let audio,ctx,src,analyser,data;
+let currentGlow=20;
+
+function start(){
+  const url=document.getElementById("songUrl").value.trim();
+  if(!url) return alert("Şarkı linki gir");
+
+  ctx=new AudioContext();
+  audio=new Audio(url);
+  audio.crossOrigin="anonymous";
+  audio.loop=true;
+
+  src=ctx.createMediaElementSource(audio);
+  analyser=ctx.createAnalyser();
+  analyser.fftSize=256;
+  data=new Uint8Array(analyser.frequencyBinCount);
+
+  src.connect(analyser);
+  analyser.connect(ctx.destination);
+
+  audio.play();
+  requestAnimationFrame(beatLoop);
+}
+
+function beatLoop(){
+  analyser.getByteFrequencyData(data);
+
+  let bass=0;
+  for(let i=0;i<10;i++) bass+=data[i];
+  bass/=10;
+
+  // Beat'e göre glow şiddeti
+  currentGlow = Math.min(90, 20 + bass/2);
+
+  requestAnimationFrame(beatLoop);
+}
+
+function hit(p){
+  p.style.setProperty("--glow", currentGlow+"px");
+  p.classList.add("on","hit");
+
+  setTimeout(()=>p.classList.remove("hit"),70);
+  setTimeout(()=>p.classList.remove("on"),200);
+}
+</script>
+
+</body>
+</html>
