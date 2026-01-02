@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Launchpad + YouTube</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  background:radial-gradient(circle at top,#0c1028,#02030a);
+  font-family:system-ui;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+}
+.controls{
+  margin-bottom:12px;
+  display:flex;
+  gap:8px;
+}
+input{
+  width:260px;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  background:#0b1030;
+  color:#fff;
+}
+button{
+  padding:10px 14px;
+  border-radius:8px;
+  border:none;
+  background:#1e264d;
+  color:#fff;
+}
+iframe{
+  width:320px;
+  height:180px;
+  border-radius:12px;
+  border:none;
+  margin-bottom:16px;
+}
+.pad-shell{
+  padding:30px;
+  background:linear-gradient(145deg,#080e25,#040714);
+  border-radius:36px;
+  box-shadow:
+    inset 0 0 80px rgba(255,255,255,.04),
+    inset 0 -30px 50px rgba(0,0,0,.95),
+    0 70px 160px rgba(0,0,0,1);
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(8,64px);
+  gap:12px;
+}
+.pad{
+  width:64px;height:64px;
+  border-radius:12px;
+  background:linear-gradient(145deg,#1b2147,#0a0f2a);
+  box-shadow:
+    inset 0 5px 10px rgba(255,255,255,.2),
+    inset 0 -12px 20px rgba(0,0,0,.95),
+    0 10px 22px rgba(0,0,0,.9);
+}
+.pad.hit{transform:translateY(6px) scale(.94);}
+</style>
+</head>
+
+<body>
+
+<div class="controls">
+  <input id="yt" placeholder="YouTube linki">
+  <button onclick="loadYT()">Yükle</button>
+</div>
+
+<iframe id="player" allow="autoplay; encrypted-media"></iframe>
+
+<div class="pad-shell">
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const grid=document.getElementById("grid");
+const pads=[];
+const colors=["#ff3b3b","#ff9f00","#ffee00","#00ff9d","#00b7ff","#7b5cff","#ff2fff","#ffffff"];
+
+for(let i=0;i<64;i++){
+  const p=document.createElement("div");
+  p.className="pad";
+  p.addEventListener("pointerdown",()=>effect(i));
+  grid.appendChild(p);
+  pads.push(p);
+}
+
+function loadYT(){
+  const url=document.getElementById("yt").value;
+  const id = url.split("v=")[1]?.split("&")[0];
+  if(!id) return alert("Geçerli YouTube linki gir");
+  document.getElementById("player").src =
+    `https://www.youtube.com/embed/${id}?autoplay=1`;
+}
+
+function effect(index){
+  const color=colors[Math.floor(Math.random()*colors.length)];
+  const x=index%8, y=Math.floor(index/8);
+
+  pads.forEach((p,i)=>{
+    const px=i%8, py=Math.floor(i/8);
+    const d=Math.abs(px-x)+Math.abs(py-y);
+    if(d<=2){
+      setTimeout(()=>{
+        p.classList.add("hit");
+        p.style.background=`radial-gradient(circle,#fff,${color})`;
+        p.style.boxShadow=`0 0 40px ${color}`;
+        setTimeout(()=>{
+          p.classList.remove("hit");
+          p.style.background="";
+          p.style.boxShadow="";
+        },260);
+      },d*40);
+    }
+  });
+}
+</script>
+
+</body>
+</html>
