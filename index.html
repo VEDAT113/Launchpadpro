@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Launchpad Ultra Wave</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  background:radial-gradient(circle at top,#0c1028,#02030a);
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.pad-shell{
+  padding:32px;
+  background:linear-gradient(145deg,#080e25,#040714);
+  border-radius:36px;
+  box-shadow:
+    inset 0 0 80px rgba(255,255,255,.04),
+    inset 0 -30px 50px rgba(0,0,0,.95),
+    0 70px 160px rgba(0,0,0,1);
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(8,64px);
+  gap:12px;
+}
+.pad{
+  width:64px;height:64px;
+  border-radius:12px;
+  background:linear-gradient(145deg,#1b2147,#0a0f2a);
+  box-shadow:
+    inset 0 5px 10px rgba(255,255,255,.2),
+    inset 0 -12px 20px rgba(0,0,0,.95),
+    0 10px 22px rgba(0,0,0,.9);
+  transition:.05s;
+}
+.pad.hit{transform:translateY(6px) scale(.94);}
+</style>
+</head>
+
+<body>
+
+<div class="pad-shell">
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const grid=document.getElementById("grid");
+const pads=[];
+const colors=[
+  "#ff3b3b","#ff9f00","#ffee00",
+  "#00ff9d","#00b7ff","#7b5cff",
+  "#ff2fff","#ffffff"
+];
+
+for(let i=0;i<64;i++){
+  const p=document.createElement("div");
+  p.className="pad";
+  p.addEventListener("pointerdown",()=>trigger(i));
+  grid.appendChild(p);
+  pads.push(p);
+}
+
+function trigger(index){
+  const mode=Math.floor(Math.random()*6);
+  const color=colors[Math.floor(Math.random()*colors.length)];
+  const x=index%8, y=Math.floor(index/8);
+
+  pads.forEach((p,i)=>{
+    const px=i%8, py=Math.floor(i/8);
+    let active=false, delay=0;
+
+    const dx=px-x, dy=py-y;
+    const dist=Math.hypot(dx,dy);
+
+    switch(mode){
+      case 0: // büyük daire
+        active=dist<=4;
+        delay=dist*55;
+        break;
+      case 1: // spiral
+        active=dist<=4;
+        delay=(Math.atan2(dy,dx)+Math.PI)*120 + dist*40;
+        break;
+      case 2: // geniş artı
+        active=px===x || py===y;
+        delay=(Math.abs(dx)+Math.abs(dy))*45;
+        break;
+      case 3: // geniş çapraz
+        active=Math.abs(dx)===Math.abs(dy);
+        delay=Math.abs(dx)*70;
+        break;
+      case 4: // yönlü patlama
+        active=py>=y;
+        delay=(py-y)*60;
+        break;
+      case 5: // organik serpinti
+        active=Math.random()>0.5;
+        delay=Math.random()*220;
+        break;
+    }
+
+    if(active){
+      setTimeout(()=>light(p,color),delay);
+    }
+  });
+}
+
+function light(p,color){
+  p.classList.add("hit");
+  p.style.background=`radial-gradient(circle at 30% 30%,#fff,${color})`;
+  p.style.boxShadow=`
+    inset 0 0 18px rgba(255,255,255,.9),
+    0 0 40px ${color},
+    0 0 120px ${color}
+  `;
+  setTimeout(()=>{
+    p.classList.remove("hit");
+    p.style.background="";
+    p.style.boxShadow="";
+  },320);
+}
+</script>
+
+</body>
+</html>
