@@ -1,4 +1,4 @@
-const CACHE_NAME = "launchpad-v3";
+const CACHE_NAME = "launchpad-v4";
 const FILES = [
   "./",
   "./index.html",
