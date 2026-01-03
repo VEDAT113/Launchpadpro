@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOXL Launchpad</title>
+
+<style>
+:root{
+  --pad:50px;
+  --gap:5px;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  height:100vh;
+  background:#040404;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:system-ui;
+}
+
+.launchpad{
+  background:#0d0d0d;
+  padding:16px;
+  border-radius:22px;
+  box-shadow:0 30px 90px rgba(0,0,0,.9);
+}
+
+/* ANA ÇERÇEVE */
+.frame{
+  display:grid;
+  grid-template-columns:26px auto 26px;
+  grid-template-rows:26px auto 26px;
+  gap:var(--gap);
+}
+
+/* DAİRE TUŞLAR */
+.round{
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.9),
+    inset 0 -3px 4px rgba(0,0,0,.3),
+    0 0 4px rgba(255,255,255,.6);
+}
+
+/* SATIRLAR */
+.top,.bottom{
+  grid-column:2;
+  display:grid;
+  grid-template-columns:repeat(8,var(--pad));
+  gap:var(--gap);
+}
+.left,.right{
+  display:grid;
+  grid-template-rows:repeat(8,var(--pad));
+  gap:var(--gap);
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(8,var(--pad));
+  grid-template-rows:repeat(8,var(--pad));
+  gap:var(--gap);
+}
+
+/* PAD */
+.pad{
+  position:relative;
+  background:#f9f9f9;
+  border-radius:8px;
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.95),
+    inset 0 -3px 4px rgba(0,0,0,.25);
+  overflow:hidden;
+}
+
+/* ALT RGB IŞIK */
+.pad::before{
+  content:"";
+  position:absolute;
+  inset:-10px;
+  background:var(--c);
+  filter:blur(16px);
+  opacity:0;
+  transition:opacity .14s ease;
+  z-index:-1;
+}
+
+/* TUŞ YÜZEYİ RENK */
+.pad::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at center,
+    rgba(255,255,255,.25),
+    var(--c) 75%);
+  opacity:0;
+  transform:scale(.85);
+  transition:
+    opacity .14s ease,
+    transform .18s ease;
+}
+
+/* AKTİF */
+.pad.on::before{opacity:.6}
+.pad.on::after{
+  opacity:.75;
+  transform:scale(1);
+}
+
+/* SOXL DALGA */
+.pad.wave::before{
+  animation:wave .38s ease-out forwards;
+}
+@keyframes wave{
+  0%{opacity:.6}
+  100%{opacity:0}
+}
+
+/* YOUTUBE */
+.controls{
+  display:flex;
+  gap:8px;
+  margin-top:12px;
+}
+.controls input{
+  flex:1;
+  padding:8px 10px;
+  border-radius:10px;
+  border:none;
+}
+.controls button{
+  padding:8px 14px;
+  border-radius:10px;
+  border:none;
+  background:#1c1c1c;
+  color:#fff;
+}
+iframe{display:none}
+</style>
+</head>
+
+<body>
+
+<div class="launchpad">
+
+  <div class="frame">
+
+    <div></div>
+    <div class="top">
+      <div class="round"></div><div class="round"></div><div class="round"></div><div class="round"></div>
+      <div class="round"></div><div class="round"></div><div class="round"></div><div class="round"></div>
+    </div>
+    <div></div>
+
+    <div class="left">
+      <div class="round"></div><div class="round"></div><div class="round"></div><div class="round"></div>
+      <div class="round"></div><div class="round"></div><div class="round"></div><div class="round"></div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="right">
+      <div class="round"></div><div class="round"></div><div class="round"></div><div class="round"></div>
+      <div class="round"></div><div class="round"></div><div class="round"></div><div class="round"></div>
+    </div>
+
+    <div></div>
+    <div class="bottom">
+      <div class="round"></div><div class="round"></div><div class="round"></div><div class="round"></div>
+      <div class="round"></div><div class="round"></div><div class="round"></div><div class="round"></div>
+    </div>
+    <div></div>
+
+  </div>
+
+  <div class="controls">
+    <input id="yt" placeholder="YouTube linki yapıştır">
+    <button id="load">Yükle</button>
+  </div>
+  <iframe id="player" allow="autoplay"></iframe>
+
+</div>
+
+<script>
+const grid=document.getElementById("grid");
+const pads=[];
+const colors=[
+  "#ff2d2d",
+  "#ff9f2d",
+  "#2dff9f",
+  "#2dc7ff",
+  "#a96bff",
+  "#ff2dd8"
+];
+
+for(let i=0;i<64;i++){
+  const p=document.createElement("div");
+  p.className="pad";
+  grid.appendChild(p);
+  pads.push(p);
+  p.addEventListener("pointerdown",()=>soxl(i));
+}
+
+function soxl(i){
+  const color=colors[Math.floor(Math.random()*colors.length)];
+  const r=Math.floor(i/8);
+  const c=i%8;
+
+  for(let n=0;n<64;n++){
+    const rr=Math.floor(n/8);
+    const cc=n%8;
+    const d=Math.abs(rr-r)+Math.abs(cc-c);
+    const pad=pads[n];
+
+    setTimeout(()=>{
+      pad.style.setProperty("--c",color);
+      pad.classList.add("on","wave");
+      setTimeout(()=>pad.classList.remove("on","wave"),260);
+    },d*14);
+  }
+}
+
+/* YOUTUBE – SADECE SES */
+document.getElementById("load").onclick=()=>{
+  const v=document.getElementById("yt").value;
+  const id=v.split("v=")[1];
+  document.getElementById("player").src=
+    "https://www.youtube.com/embed/"+id+"?autoplay=1";
+};
+</script>
+
+</body>
+</html>
